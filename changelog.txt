@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.7.0
+Date: 2026-06-27
+  Features:
+    - New "All ruin sets" option (now the default) spawns every installed ruin set together, still honoring per-planet, per-ruin and per-set restrictions.
+  Changes:
+    - Removed the "none" option; disable the mod to turn ruins off.
+---------------------------------------------------------------------------------------------------
 Version: 1.6.0
 Date: 2026-06-26
   Changes:

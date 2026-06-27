@@ -38,7 +38,10 @@ local constants = {
   DEBUG_SURFACE_NAME = "debug-ruins",
 
   -- None (no ruin-set selected)
-  NONE = "__none__"
+  NONE = "__none__",
+
+  -- All ruin-sets merged together
+  ALL = "__all__"
 }
 
 return constants

@@ -77,4 +77,23 @@ function ruinsets.get(name)
   return _ruin_sets[name]
 end
 
+-- Merge registered ruin-sets into one {small,medium,large}. only: include only that set; skip: exclude that set.
+---@param only string|nil
+---@param skip string|nil
+---@return RuinSet
+function ruinsets.merged(only, skip)
+  local out = {}
+  for name, set in pairs(_ruin_sets) do
+    if (only == nil or name == only) and name ~= skip then
+      for size, ruins in pairs(set) do
+        out[size] = out[size] or {}
+        for _, ruin in pairs(ruins) do
+          table.insert(out[size], ruin)
+        end
+      end
+    end
+  end
+  return out
+end
+
 return ruinsets

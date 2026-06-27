@@ -77,9 +77,10 @@ script.on_nth_tick(spawn_tick, function(event)
     return
   end
 
-  local _ruinsets = ruinsets.get(ruinset_name)
+  -- For "All" the pool is merged per surface inside the loop (respecting exclusivity); a single set is fetched once.
+  local _ruinsets = (ruinset_name == constants.ALL) and {} or ruinsets.get(ruinset_name)
   if debug_on_tick then log(string.format("[on_tick]: runinset_name='%s' has %d ruin(s) registered.", ruinset_name, table_size(_ruinsets))) end
-  if table_size(_ruinsets) == 0 then
+  if ruinset_name ~= constants.ALL and table_size(_ruinsets) == 0 then
     log(string.format("[on_tick]: ruinset_name='%s' has no ruins registed but is configured as ruin-set. - EXIT!", ruinset_name))
     return
   end
@@ -93,12 +94,18 @@ script.on_nth_tick(spawn_tick, function(event)
       error(string.format("queue_item.size='%s' is not registered in ruin_half_sizes table. Have you forgotten to invoke `utils.register_ruin_set()`?", queue_item.size))
     end
 
-    if not spawning.allow_spawning_on(queue_item.surface, ruinset_name) then
+    -- For "All", merge every registered set for this surface: exclusive surface -> only that set, no-spawn surface -> drop that set.
+    local _surface_ruinsets = _ruinsets
+    if ruinset_name == constants.ALL then
+      _surface_ruinsets = ruinsets.merged(spawning.exclusive_ruinset[queue_item.surface.name], spawning.no_spawning[queue_item.surface.name])
+    end
+
+    if ruinset_name ~= constants.ALL and not spawning.allow_spawning_on(queue_item.surface, ruinset_name) then
       if debug_on_tick then log(string.format("[on_tick]: ruinset_name='%s' is not allowed to spawn on surface='%s' - SKIPPED!", ruinset_name, queue_item.surface.name)) end
-    elseif spawning.exclusive_ruinset[queue_item.surface.name] == nil or ruinset_name == spawning.exclusive_ruinset[queue_item.surface.name] then
+    elseif ruinset_name == constants.ALL or spawning.exclusive_ruinset[queue_item.surface.name] == nil or ruinset_name == spawning.exclusive_ruinset[queue_item.surface.name] then
       -- Get ruins
       if debug_on_tick then log(string.format("[on_tick]: Getting ruins for ruinset_name='%s',queue_item.size='%s' ...", ruinset_name, queue_item.size)) end
-      local ruins = _ruinsets[queue_item.size]
+      local ruins = _surface_ruinsets[queue_item.size]
 
       if debug_on_tick then log(string.format("[on_tick]: ruins[]='%s'", type(ruins))) end
       if type(ruins) == "table" and table_size(ruins) > 0 then

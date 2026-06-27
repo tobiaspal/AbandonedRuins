@@ -165,7 +165,9 @@ remote.add_interface("AbandonedRuins",
   ---@return RuinSet
   get_current_ruin_set = function()
     if debug_log then log(string.format("[get_current_ruin_set]: current-ruin-set='%s'", settings.global[constants.CURRENT_RUIN_SET_KEY].value)) end
-    return ruinsets.get(settings.global[constants.CURRENT_RUIN_SET_KEY].value)
+    local current = settings.global[constants.CURRENT_RUIN_SET_KEY].value
+    if current == constants.ALL then return ruinsets.merged() end
+    return ruinsets.get(current)
   end,
 
   -- Registers ruin-set name as exclusive to a surface
