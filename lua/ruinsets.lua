@@ -5,6 +5,10 @@ local constants = require("constants")
 ---@type table<string, RuinSet>
 local _ruin_sets = {}
 
+-- Merged pools of ruinsets.merged(), keyed by the merged set names; emptied whenever a set is (re-)registered
+---@type table<string, RuinSet>
+local _merged = {}
+
 ---@type boolean
 local debug_log = settings.global[constants.ENABLE_DEBUG_LOG_KEY].value
 ---@type boolean
@@ -54,6 +58,7 @@ function ruinsets.add(name, ruin_sets)
 
   if debug_log then log(string.format("[add]: Setting name='%s' ruin-sets ...", name)) end
   _ruin_sets[name] = ruin_sets
+  _merged = {}
 
   if debug_log then log("[add]: EXIT!") end
 end
@@ -75,6 +80,67 @@ function ruinsets.get(name)
 
   if debug_log then log(string.format("[get]: _ruin_sets[%s][]='%s' - EXIT!", name, type(_ruin_sets[name]))) end
   return _ruin_sets[name]
+end
+
+-- Deep equality of plain data tables; remote.call copies tables, so a ruin another set took from get_ruin_set() is equal to the original, not the same table
+---@param a any
+---@param b any
+---@return boolean
+local function equal(a, b)
+  if a == b then return true end
+  if type(a) ~= "table" or type(b) ~= "table" then return false end
+  for k, v in pairs(a) do
+    if not equal(v, b[k]) then return false end
+  end
+  for k in pairs(b) do
+    if a[k] == nil then return false end
+  end
+  return true
+end
+
+-- Merge the registered ruin-sets accepted by include(name) into one {small,medium,large}. Ruin-set mods often register a copy of another set (mostly "base"), so a ruin already taken from one set is skipped in the others; repeats within one set (weights) stay.
+---@param include fun(name: string): boolean
+---@return RuinSet
+function ruinsets.merged(include)
+  local names = {}
+  for name in pairs(_ruin_sets) do
+    if include(name) then
+      names[#names + 1] = name
+    end
+  end
+  table.sort(names)
+
+  local key = table.concat(names, "\n")
+  if _merged[key] == nil then
+    local out, taken = {}, {}
+    for _, name in ipairs(names) do
+      for size, ruins in pairs(_ruin_sets[name]) do
+        out[size] = out[size] or {}
+        taken[size] = taken[size] or {}
+        for _, ruin in pairs(ruins) do
+          -- Only ruins with as many entities and tiles can be equal; comparing within these groups avoids serializing every ruin (seconds for large sets)
+          local group_key = table_size(ruin.entities or {}) .. "/" .. table_size(ruin.tiles or {})
+          local group = taken[size][group_key] or {}
+          taken[size][group_key] = group
+
+          local duplicate = false
+          for _, other in pairs(group) do
+            if other.set ~= name and equal(other.ruin, ruin) then
+              duplicate = true
+              break
+            end
+          end
+
+          if not duplicate then
+            group[#group + 1] = {set = name, ruin = ruin}
+            out[size][#out[size] + 1] = ruin
+          end
+        end
+      end
+    end
+    _merged[key] = out
+  end
+  return _merged[key]
 end
 
 return ruinsets
