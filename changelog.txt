@@ -1,4 +1,16 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.7.2
+Date: 2026-11-14
+  Features:
+    - New "All ruin sets" option (now the default) spawns every installed ruin set together, still honoring per-planet, per-ruin and per-set restrictions. A ruin that several sets register counts once.
+  Changes:
+    - Removed the "none" option; disable the mod to turn ruins off.
+    - After a mod configuration change, the chat names the active ruin set, or every merged set with "All".
+    - Changing the debug settings no longer prints to the chat.
+    - The spawn tick setting is described in ticks, the unit it counts.
+  Fixes:
+    - Every ruin set that calls no_spawning_on for a surface stays excluded there, not only the last one.
+---------------------------------------------------------------------------------------------------
 Version: 1.6.1
 Date: 2026-11-09
   Changes:
