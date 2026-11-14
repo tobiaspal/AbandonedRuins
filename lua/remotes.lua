@@ -187,7 +187,7 @@ remote.add_interface("AbandonedRuins",
       error(string.format("ruinset_name[]='%s' is not expected type 'string'", type(ruinset_name)))
     elseif #ruinset_name == 0 then
       error("Parameter 'ruinset_name' cannot be an empty string")
-    elseif spawning.no_spawning[surface_name] ~= nil and ruinset_name == spawning.no_spawning[surface_name] then
+    elseif spawning.no_spawning[surface_name] ~= nil and spawning.no_spawning[surface_name][ruinset_name] then
       error(string.format("ruinset_name='%s' is marked for 'no-spawning' at surface_name='%s' which is the opposite of exclusive", ruinset_name, surface_name))
     end
 
@@ -215,7 +215,8 @@ remote.add_interface("AbandonedRuins",
     end
 
     if debug_log then log(string.format("[no_spawning_on]: Registering surface_name='%s',ruinset_name='%s' as 'no-spawning' ...", surface_name, ruinset_name)) end
-    spawning.no_spawning[surface_name] = ruinset_name
+    spawning.no_spawning[surface_name] = spawning.no_spawning[surface_name] or {}
+    spawning.no_spawning[surface_name][ruinset_name] = true
 
     if debug_log then log("[no_spawning_on]: EXIT!") end
   end,

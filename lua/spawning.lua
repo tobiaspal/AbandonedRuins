@@ -26,7 +26,7 @@ spawning.spawn_chances = {}
 spawning.exclusive_ruinset = {}
 
 -- Table of "no-spawning" per surface (see same `no_spawning` in mod AbandondedRuins-base for a per-ruin setting)
----@type table<string, string> surface name, ruin-set name
+---@type table<string, table<string, boolean>> surface name, set of ruin-set names
 spawning.no_spawning = {}
 
 -- Ruin's half sizes
@@ -555,7 +555,7 @@ spawning.allow_spawning_on = function (surface, ruinset_name)
   end
 
   if debug_log then log(string.format("[allow_spawning_on]: Checking surface.name='%s',ruinset_name='%s' ...", surface.name, ruinset_name)) end
-  local allow = not (spawning.no_spawning[surface.name] ~= nil and ruinset_name == spawning.no_spawning[surface.name])
+  local allow = not (spawning.no_spawning[surface.name] ~= nil and spawning.no_spawning[surface.name][ruinset_name])
 
   if debug_log then log(string.format("[allow_spawning_on]: allow='%s' - EXIT!", allow)) end
   return allow
