@@ -42,8 +42,8 @@ data:extend({
     type = "string-setting",
     name = constants.CURRENT_RUIN_SET_KEY,
     setting_type = "runtime-global",
-    allowed_values = {constants.NONE},
-    default_value = constants.NONE,
+    allowed_values = {constants.ALL},
+    default_value = constants.ALL,
     order = "c",
   }, {
     type = "int-setting",
